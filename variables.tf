@@ -33,8 +33,21 @@ variable "allowed_ip" {
   type        = string
   default     = "0.0.0.0/0"
 }
+
 variable "instance_type" {
   description = "Tipo de instancia EC2 para el servidor GNS3"
   type        = string
   default     = "t3.medium"
+}
+
+variable "root_volume_size" {
+  description = "Tamaño del disco raíz"
+  type        = number
+  default     = 30
+}
+
+variable "allocate_elastic_ip" {
+  description = "Asignar Elastic IP al servidor GNS3"
+  type        = bool
+  default     = true
 }

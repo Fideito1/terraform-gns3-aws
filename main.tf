@@ -128,3 +128,71 @@ resource "local_file" "gns3_private_key" {
   filename        = "${path.module}/${var.project_name}-key.pem"
   file_permission = "0400"
 }
+# Obtiene automáticamente la última imagen oficial de Ubuntu 24.04
+# publicada por Canonical para AWS.
+#
+# Se utiliza un data source en lugar de una AMI fija para evitar
+# que el código deje de funcionar si AWS cambia el identificador
+# de la imagen en el futuro.
+data "aws_ami" "ubuntu" {
+
+  # Selecciona la imagen más reciente que cumpla los filtros
+  most_recent = true
+
+  # Cuenta oficial de Canonical (Ubuntu) en AWS
+  owners = ["099720109477"]
+
+  # Busca imágenes Ubuntu Server 24.04 (Noble Numbat)
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  # Solo se aceptan imágenes HVM (Hardware Virtual Machine)
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+# Instancia EC2 que actuará como servidor GNS3
+resource "aws_instance" "gns3_server" {
+
+  # Última imagen oficial de Ubuntu 24.04
+  ami = data.aws_ami.ubuntu.id
+
+  # Tipo de instancia definido mediante variable
+  instance_type = var.instance_type
+
+  # Despliegue en la subred pública
+  subnet_id = aws_subnet.public.id
+
+  # IP privada fija dentro de la VPC
+  private_ip = "10.10.1.10"
+
+  # Asociación del Security Group
+  vpc_security_group_ids = [
+    aws_security_group.gns3.id
+  ]
+
+  # Asignación automática de IP pública
+  associate_public_ip_address = true
+
+  # Disco raíz del sistema operativo
+  root_block_device {
+    volume_size = var.root_volume_size
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = "${var.project_name}-server"
+  }
+}
+# Elastic IP para el servidor GNS3
+resource "aws_eip" "gns3_eip" {
+  domain   = "vpc"
+  instance = aws_instance.gns3_server.id
+
+  tags = {
+    Name = "${var.project_name}-eip"
+  }
+}
