@@ -49,6 +49,16 @@ resource "aws_subnet" "public" {
     Name = "${var.project_name}-public-subnet"
   }
 }
+
+resource "aws_subnet" "private" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.private_subnet_cidr
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "${var.project_name}-private-subnet"
+  }
+}
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 

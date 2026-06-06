@@ -21,6 +21,13 @@ variable "public_subnet_cidr" {
   type        = string
   default     = "10.10.1.0/24"
 }
+
+variable "private_subnet_cidr" {
+  description = "Rango CIDR de la subred privada para laboratorios"
+  type        = string
+  default     = "10.10.2.0/24"
+}
+
 variable "allowed_ip" {
   description = "IP pública autorizada para conectarse por SSH y GNS3"
   type        = string
