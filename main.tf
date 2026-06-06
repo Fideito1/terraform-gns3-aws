@@ -159,16 +159,14 @@ resource "aws_instance" "gns3_server" {
 
   # Última imagen oficial de Ubuntu 24.04
   ami = data.aws_ami.ubuntu.id
-
   # Tipo de instancia definido mediante variable
   instance_type = var.instance_type
-
+  key_name      = aws_key_pair.gns3_key.key_name
   # Despliegue en la subred pública
   subnet_id = aws_subnet.public.id
 
   # IP privada fija dentro de la VPC
   private_ip = "10.10.1.10"
-
   # Asociación del Security Group
   vpc_security_group_ids = [
     aws_security_group.gns3.id
@@ -176,7 +174,6 @@ resource "aws_instance" "gns3_server" {
 
   # Asignación automática de IP pública
   associate_public_ip_address = true
-
   # Disco raíz del sistema operativo
   root_block_device {
     volume_size = var.root_volume_size
@@ -195,4 +192,22 @@ resource "aws_eip" "gns3_eip" {
   tags = {
     Name = "${var.project_name}-eip"
   }
+}
+
+# Volumen de datos para GNS3
+resource "aws_ebs_volume" "gns3_data" {
+  availability_zone = aws_instance.gns3_server.availability_zone
+  size              = var.ebs_size
+  type              = "gp3"
+
+  tags = {
+    Name = "${var.project_name}-data"
+  }
+}
+
+# Asociación del volumen EBS a la instancia
+resource "aws_volume_attachment" "gns3_data" {
+  device_name = "/dev/sdf"
+  volume_id   = aws_ebs_volume.gns3_data.id
+  instance_id = aws_instance.gns3_server.id
 }

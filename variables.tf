@@ -51,3 +51,9 @@ variable "allocate_elastic_ip" {
   type        = bool
   default     = true
 }
+
+variable "ebs_size" {
+  description = "Tamaño del volumen EBS para GNS3"
+  type        = number
+  default     = 100
+}
