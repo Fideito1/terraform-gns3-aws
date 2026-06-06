@@ -6,6 +6,16 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
+
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -89,4 +99,22 @@ resource "aws_security_group" "gns3" {
   tags = {
     Name = "${var.project_name}-sg"
   }
+}
+resource "tls_private_key" "gns3_key" {
+  algorithm = "ED25519"
+}
+
+resource "aws_key_pair" "gns3_key" {
+  key_name   = "${var.project_name}-key"
+  public_key = tls_private_key.gns3_key.public_key_openssh
+
+  tags = {
+    Name = "${var.project_name}-key"
+  }
+}
+
+resource "local_file" "gns3_private_key" {
+  content         = tls_private_key.gns3_key.private_key_openssh
+  filename        = "${path.module}/${var.project_name}-key.pem"
+  file_permission = "0400"
 }

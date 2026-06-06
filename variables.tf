@@ -26,3 +26,8 @@ variable "allowed_ip" {
   type        = string
   default     = "0.0.0.0/0"
 }
+variable "instance_type" {
+  description = "Tipo de instancia EC2 para el servidor GNS3"
+  type        = string
+  default     = "t3.medium"
+}
