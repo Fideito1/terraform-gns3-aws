@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "Región de AWS donde se desplegará el laboratorio"
   type        = string
-  default     = "eu-west-1"
+  default     = "us-east-1"
 }
 
 variable "project_name" {
