@@ -21,3 +21,8 @@ variable "public_subnet_cidr" {
   type        = string
   default     = "10.10.1.0/24"
 }
+variable "allowed_ip" {
+  description = "IP pública autorizada para conectarse por SSH y GNS3"
+  type        = string
+  default     = "0.0.0.0/0"
+}

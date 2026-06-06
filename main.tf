@@ -57,3 +57,36 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
 }
+resource "aws_security_group" "gns3" {
+  name        = "${var.project_name}-sg"
+  description = "Security Group para servidor GNS3"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_ip]
+  }
+
+  ingress {
+    description = "GNS3 Server"
+    from_port   = 3080
+    to_port     = 3080
+    protocol    = "tcp"
+    cidr_blocks = [var.allowed_ip]
+  }
+
+  egress {
+    description = "Salida a Internet"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-sg"
+  }
+}
