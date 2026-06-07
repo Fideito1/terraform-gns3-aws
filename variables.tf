@@ -57,3 +57,15 @@ variable "ebs_size" {
   type        = number
   default     = 100
 }
+
+variable "create_sri_labs" {
+  description = "Crear escenario SRI en la subred privada"
+  type        = bool
+  default     = true
+}
+
+variable "sri_lab_instance_type" {
+  description = "Tipo de instancia para los laboratorios SRI"
+  type        = string
+  default     = "t3.micro"
+}

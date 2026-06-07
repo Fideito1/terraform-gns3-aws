@@ -211,3 +211,78 @@ resource "aws_volume_attachment" "gns3_data" {
   volume_id   = aws_ebs_volume.gns3_data.id
   instance_id = aws_instance.gns3_server.id
 }
+
+locals {
+  sri_labs = {
+    dns = {
+      name        = "DNS-SRI"
+      private_ip  = "10.10.2.10"
+      script_path = "scripts/dns.sh"
+    }
+
+    web = {
+      name        = "WEB-SRI"
+      private_ip  = "10.10.2.20"
+      script_path = "scripts/web.sh"
+    }
+
+    client = {
+      name        = "CLIENTE-SRI"
+      private_ip  = "10.10.2.30"
+      script_path = "scripts/client.sh"
+    }
+  }
+}
+
+resource "aws_security_group" "sri_labs" {
+  name        = "${var.project_name}-sri-labs-sg"
+  description = "Security Group para escenario SRI privado"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Permitir trafico interno desde la VPC"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.vpc_cidr]
+  }
+
+  egress {
+    description = "Salida permitida"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.project_name}-sri-labs-sg"
+  }
+}
+
+resource "aws_instance" "sri_labs" {
+  for_each = var.create_sri_labs ? local.sri_labs : {}
+
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.sri_lab_instance_type
+
+  subnet_id  = aws_subnet.private.id
+  private_ip = each.value.private_ip
+
+  vpc_security_group_ids = [
+    aws_security_group.sri_labs.id
+  ]
+
+  associate_public_ip_address = false
+
+  user_data = file(each.value.script_path)
+
+  root_block_device {
+    volume_size = 15
+    volume_type = "gp3"
+  }
+
+  tags = {
+    Name = each.value.name
+  }
+}
